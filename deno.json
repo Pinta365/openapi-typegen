@@ -1,6 +1,6 @@
 {
     "name": "@pinta365/openapi-typegen",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "exports": "./mod.ts",
     "fmt": { "useTabs": false, "indentWidth": 4, "lineWidth": 150 },
     "lint": { "rules": { "exclude": [] } },
