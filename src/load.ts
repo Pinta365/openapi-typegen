@@ -1,7 +1,16 @@
 import { readFile } from "@cross/fs";
+import { parse as parseYaml } from "@std/yaml";
 import type { LoadResult, OpenAPI2Spec, OpenAPI3Spec, SchemaObject, SpecInput, SpecVersion } from "./types.ts";
 
 const HTTP_PREFIX = /^https?:\/\//i;
+const YAML_EXT = /\.(yaml|yml)$/i;
+
+function parseSpecText(text: string, urlOrPath: string): unknown {
+    if (YAML_EXT.test(urlOrPath)) {
+        return parseYaml(text) as unknown;
+    }
+    return JSON.parse(text) as unknown;
+}
 
 export async function loadSpec(spec: SpecInput): Promise<unknown> {
     if (typeof spec === "object" && spec !== null && !(spec instanceof URL)) {
@@ -16,10 +25,11 @@ export async function loadSpec(spec: SpecInput): Promise<unknown> {
         if (!res.ok) {
             throw new Error(`Failed to fetch spec: ${res.status} ${res.statusText} (${urlOrPath})`);
         }
-        return await res.json() as unknown;
+        const text = await res.text();
+        return parseSpecText(text, urlOrPath);
     }
     const text = await readFile(urlOrPath, "utf-8");
-    return JSON.parse(text) as unknown;
+    return parseSpecText(text, urlOrPath);
 }
 
 export function detectVersion(spec: unknown): SpecVersion {
