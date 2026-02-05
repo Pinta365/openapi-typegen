@@ -1,14 +1,14 @@
 openapi: "3.0.0"
 info:
-  title: Minimal
-  version: "1.0"
+    title: Minimal
+    version: "1.0"
 paths: {}
 components:
-  schemas:
-    Item:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
+    schemas:
+        Item:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string

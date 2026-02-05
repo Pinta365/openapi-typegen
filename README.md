@@ -1,6 +1,7 @@
 # @pinta365/openapi-typegen
 
-Generate TypeScript types from OpenAPI 2 (Swagger) and OpenAPI 3.x specs. Loads from URL, file path, or object; resolves internal and external `$ref`s; outputs interfaces and type aliases.
+Generate TypeScript types from OpenAPI 2 (Swagger) and OpenAPI 3.x specs. Loads from URL, file path, or object; resolves internal and external
+`$ref`s; outputs interfaces and type aliases.
 
 ## Usage
 
@@ -28,15 +29,15 @@ Returns a `Promise<string>` of the generated TypeScript source. Optionally write
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| **`resolver`** | `(url: string) => Promise<unknown>` | `fetch` | Resolver for external `$ref` URLs. Receives the URL, returns parsed JSON. |
-| **`outputPath`** | `string` | — | If set, the generated TypeScript is written to this path (via `@cross/fs`). |
-| **`propertyNaming`** | `"camel"` \| `"preserve"` | `"camel"` | Property names in generated types: camelCase or preserve spec as-is. |
-| **`indent`** | `{ useTabs: true }` \| `{ useTabs: false; width?: number }` | `{ useTabs: false, width: 4 }` | Indentation: one tab per level, or `width` spaces per level (default 4). |
-| **`includeHeader`** | `boolean` | `true` | Whether to emit a file header comment. |
-| **`headerComment`** | `string` | — | Custom header text when `includeHeader` is true. Multi-line strings are emitted as-is. |
-| **`sourceLabel`** | `string` | (auto from spec) | Label shown in the default header as “Source file: …”. Set automatically when `spec` is a string or URL. |
+| Option               | Type                                                        | Default                        | Description                                                                                              |
+| -------------------- | ----------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| **`resolver`**       | `(url: string) => Promise<unknown>`                         | `fetch`                        | Resolver for external `$ref` URLs. Receives the URL, returns parsed JSON.                                |
+| **`outputPath`**     | `string`                                                    | —                              | If set, the generated TypeScript is written to this path (via `@cross/fs`).                              |
+| **`propertyNaming`** | `"camel"` \| `"preserve"`                                   | `"camel"`                      | Property names in generated types: camelCase or preserve spec as-is.                                     |
+| **`indent`**         | `{ useTabs: true }` \| `{ useTabs: false; width?: number }` | `{ useTabs: false, width: 4 }` | Indentation: one tab per level, or `width` spaces per level (default 4).                                 |
+| **`includeHeader`**  | `boolean`                                                   | `true`                         | Whether to emit a file header comment.                                                                   |
+| **`headerComment`**  | `string`                                                    | —                              | Custom header text when `includeHeader` is true. Multi-line strings are emitted as-is.                   |
+| **`sourceLabel`**    | `string`                                                    | (auto from spec)               | Label shown in the default header as “Source file: …”. Set automatically when `spec` is a string or URL. |
 
 **Default header** (when `includeHeader` is true and `headerComment` is not set):
 
@@ -47,7 +48,10 @@ Returns a `Promise<string>` of the generated TypeScript source. Optionally write
 
 ## Behavior
 
-- **OpenAPI 2**: Uses `definitions`; external `$ref` URLs are fetched and merged (including docs that use a `definitions` or `components.schemas` wrapper).
+- **OpenAPI 2**: Uses `definitions`; external `$ref` URLs are fetched and merged (including docs that use a `definitions` or `components.schemas`
+  wrapper).
 - **OpenAPI 3.x**: Uses `components.schemas`; external `$ref` URLs are fetched and merged the same way.
-- **External refs**: Both specs support `$ref` to full URLs (e.g. `https://example.com/schemas.json#/Thing`). The library fetches those documents and resolves refs recursively; use a custom `resolver` when you need to serve from disk or a different source.
-- Type names are PascalCase; property names follow `propertyNaming`. Descriptions and titles become JSDoc (single-line or starred-block for multi-line).
+- **External refs**: Both specs support `$ref` to full URLs (e.g. `https://example.com/schemas.json#/Thing`). The library fetches those documents and
+  resolves refs recursively; use a custom `resolver` when you need to serve from disk or a different source.
+- Type names are PascalCase; property names follow `propertyNaming`. Descriptions and titles become JSDoc (single-line or starred-block for
+  multi-line).
