@@ -12,7 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - **JSR publish CI**: `.github/workflows/jsr-publish.yml` publishes the package to JSR when a GitHub release is published (`npx jsr publish`).
-- **npm publish CI**: `.github/workflows/npm-publish.yml` builds the npm package with `deno task build:npm` and publishes to npm (public) when a GitHub release is published.
+- **npm publish CI**: `.github/workflows/npm-publish.yml` builds the npm package with `deno task build:npm` and publishes to npm (public) when a
+  GitHub release is published.
 
 ## [0.0.1] - 2026-02-05
 
