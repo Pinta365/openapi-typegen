@@ -5,7 +5,7 @@
     "fmt": { "useTabs": false, "indentWidth": 4, "lineWidth": 150 },
     "lint": { "rules": { "exclude": [] } },
     "tasks": {
-        "dev": "deno run --watch mod.ts",
+        "build:npm": "deno run -A scripts/build_npm.ts",
         "prepush": "deno fmt --check mod.ts src test && deno lint && deno check mod.ts && deno test -A"
     },
     "imports": {
