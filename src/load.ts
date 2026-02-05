@@ -5,6 +5,7 @@ import type { LoadResult, OpenAPI2Spec, OpenAPI3Spec, SchemaObject, SpecInput, S
 const HTTP_PREFIX = /^https?:\/\//i;
 const YAML_EXT = /\.(yaml|yml)$/i;
 
+/** Parse spec text as JSON or YAML based on urlOrPath extension. */
 function parseSpecText(text: string, urlOrPath: string): unknown {
     if (YAML_EXT.test(urlOrPath)) {
         return parseYaml(text) as unknown;
@@ -12,6 +13,12 @@ function parseSpecText(text: string, urlOrPath: string): unknown {
     return JSON.parse(text) as unknown;
 }
 
+/**
+ * Load a spec from a URL, file path, or return the object as-is.
+ * Fetches HTTP(S) URLs, reads local files (JSON or YAML by extension), or returns the given object.
+ * @param spec - URL string, file path, URL instance, or parsed spec object
+ * @returns Parsed spec as a plain object
+ */
 export async function loadSpec(spec: SpecInput): Promise<unknown> {
     if (typeof spec === "object" && spec !== null && !(spec instanceof URL)) {
         return spec;
@@ -32,6 +39,12 @@ export async function loadSpec(spec: SpecInput): Promise<unknown> {
     return parseSpecText(text, urlOrPath);
 }
 
+/**
+ * Detect OpenAPI/Swagger version from a parsed spec object.
+ * @param spec - Parsed root spec (must have `swagger: "2.0"` or `openapi: "3.x.x"`)
+ * @returns `"openapi2"` or `"openapi3"`
+ * @throws If spec is not an object or version is missing/unsupported
+ */
 export function detectVersion(spec: unknown): SpecVersion {
     if (spec === null || typeof spec !== "object") {
         throw new Error("Invalid spec: not an object.");
@@ -46,6 +59,12 @@ export function detectVersion(spec: unknown): SpecVersion {
     throw new Error("Invalid spec: missing or unsupported 'swagger: 2.0' or 'openapi: 3.x'.");
 }
 
+/**
+ * Recursively collect all `$ref` string values from a spec (or any object).
+ * Mutates the given `refs` set in place.
+ * @param obj - Any value (object, array, or primitive)
+ * @param refs - Set to which found `$ref` values are added
+ */
 export function collectRefs(obj: unknown, refs: Set<string>): void {
     if (obj === null || typeof obj !== "object") {
         return;
@@ -65,6 +84,13 @@ export function collectRefs(obj: unknown, refs: Set<string>): void {
     }
 }
 
+/**
+ * Extract schema registry and collect refs from a parsed spec.
+ * OpenAPI 2: uses `definitions`; OpenAPI 3: uses `components.schemas`.
+ * @param spec - Parsed spec object (OpenAPI 2 or 3 shape)
+ * @param version - Already-detected version
+ * @returns LoadResult with registry, refs, and spec
+ */
 export function extractSchemas(spec: unknown, version: SpecVersion): LoadResult {
     const refs = new Set<string>();
     collectRefs(spec, refs);
@@ -93,6 +119,12 @@ export function extractSchemas(spec: unknown, version: SpecVersion): LoadResult 
     };
 }
 
+/**
+ * Load a spec (URL, path, or object), detect version, and extract schemas and refs.
+ * One-shot entry for the load pipeline.
+ * @param spec - URL string, file path, URL instance, or parsed spec object
+ * @returns LoadResult with version, registry, refs, and original spec
+ */
 export async function load(spec: SpecInput): Promise<LoadResult> {
     const raw = await loadSpec(spec);
     const version = detectVersion(raw);

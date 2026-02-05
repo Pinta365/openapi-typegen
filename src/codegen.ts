@@ -3,6 +3,7 @@ import { toCamelCase, toPascalCase } from "./naming.ts";
 
 const DEFAULT_INDENT: { useTabs: false; width: number } = { useTabs: false, width: 4 };
 
+/** Map a $ref value (e.g. #/components/schemas/Foo or URL#/path) to a PascalCase type name. */
 function refToTypeName(ref: string): string {
     if (ref.startsWith("http://") || ref.startsWith("https://")) {
         const match = ref.match(/#\/(.+)$/);
@@ -23,6 +24,7 @@ function refToTypeName(ref: string): string {
 
 const DEFAULT_PROP_NAMING = "camel" as const;
 
+/** Convert a schema node to a TypeScript type string (e.g. "string", "Foo[]", "A | B"). */
 function schemaToTS(
     schema: SchemaObject,
     _map: ResolvedSchemaMap,
@@ -69,10 +71,12 @@ function schemaToTS(
     }
 }
 
+/** Apply property naming option: camelCase or preserve original key. */
 function propName(key: string, propertyNaming: "camel" | "preserve"): string {
     return propertyNaming === "camel" ? toCamelCase(key) : key;
 }
 
+/** Format a description string as a JSDoc block (single or multi-line), with optional indent. */
 function formatJSDocComment(text: string, indent: string): string {
     const safe = String(text).replace(/\*\//g, "* /");
     const parts = safe.split(/\r?\n/);
@@ -83,6 +87,7 @@ function formatJSDocComment(text: string, indent: string): string {
     return lines.join("\n");
 }
 
+/** Emit TypeScript property lines for an object schema (with optional JSDoc from description/title). */
 function generateProperties(
     properties: Record<string, SchemaObject>,
     required: string[],
@@ -125,6 +130,7 @@ function generateProperties(
     return lines;
 }
 
+/** Emit a single type/interface declaration (interface, type alias, or extends). */
 function generateInterface(
     name: string,
     schema: SchemaObject,
@@ -182,6 +188,7 @@ function generateInterface(
     return lines.join("\n");
 }
 
+/** Build the default file header comment (tool, timestamp, optional sourceLabel, do-not-edit). */
 function buildDefaultHeader(options: GenerateOptions): string {
     const lines = [
         " * Auto-generated TypeScript types with @pinta365/openapi-typegen",
@@ -194,6 +201,13 @@ function buildDefaultHeader(options: GenerateOptions): string {
     return "/**\n" + lines.join("\n") + "\n */";
 }
 
+/**
+ * Generate TypeScript source from a resolved schema map.
+ * Emits interfaces and type aliases with optional header; does not load or resolve.
+ * @param map - Resolved schema map (type name → SchemaObject), e.g. from {@link resolve}
+ * @param options - Indent, propertyNaming, includeHeader, headerComment, sourceLabel
+ * @returns Generated TypeScript source string
+ */
 export function generate(map: ResolvedSchemaMap, options: GenerateOptions = {}): string {
     const indent = options.indent ?? DEFAULT_INDENT;
     const indentStr = indent.useTabs ? "\t" : " ".repeat(indent.width ?? 4);

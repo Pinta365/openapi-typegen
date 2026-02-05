@@ -1,3 +1,4 @@
+/** JSON Schema / OpenAPI schema object (type, properties, $ref, enum, etc.). */
 export interface SchemaObject {
     type?: string;
     format?: string;

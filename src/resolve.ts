@@ -3,15 +3,18 @@ import type { LoadResult, ResolvedSchemaMap, SchemaObject, SpecVersion } from ".
 import type { Resolver } from "./types.ts";
 import { toPascalCase } from "./naming.ts";
 
+/** True if ref is an absolute HTTP(S) URL. */
 function isExternalRef(ref: string): boolean {
     return ref.startsWith("http://") || ref.startsWith("https://");
 }
 
+/** Get the document URL from a ref (strip fragment). */
 function getBaseUrl(ref: string): string {
     const i = ref.indexOf("#");
     return i >= 0 ? ref.slice(0, i) : ref;
 }
 
+/** Recursively clone schema; internal refs are left as $ref (resolution is by name in the map). */
 function resolveSchemaInternal(
     schema: SchemaObject,
     root: unknown,
@@ -39,6 +42,7 @@ function resolveSchemaInternal(
     return out;
 }
 
+/** Extract schema map from a document (definitions for Swagger 2, components.schemas for OpenAPI 3, or top-level). */
 function extractDocSchemas(doc: Record<string, unknown>): Record<string, SchemaObject> {
     const defs = doc.definitions;
     if (defs !== null && typeof defs === "object" && !Array.isArray(defs)) {
@@ -70,6 +74,7 @@ function extractDocSchemas(doc: Record<string, unknown>): Record<string, SchemaO
     return out;
 }
 
+/** Fetch external document via resolver and return baseUrl, extracted schemas, and raw object. */
 async function fetchExternalDoc(
     url: string,
     resolver: Resolver,
@@ -82,6 +87,13 @@ async function fetchExternalDoc(
     return { baseUrl: url, doc, raw };
 }
 
+/**
+ * Resolve loaded schemas into a single map: internal schemas first, then external refs fetched via resolver.
+ * Schema names are normalized to PascalCase. External docs are fetched and their schemas merged.
+ * @param loadResult - Result from {@link load}
+ * @param resolver - Function to fetch external ref URLs (e.g. {@link defaultResolver})
+ * @returns Map of type name → SchemaObject ready for {@link generate}
+ */
 export async function resolve(
     loadResult: LoadResult,
     resolver: Resolver,
