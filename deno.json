@@ -1,0 +1,16 @@
+{
+    "name": "@pinta365/openapi-typegen",
+    "version": "0.0.1",
+    "exports": "./mod.ts",
+    "fmt": { "useTabs": false, "indentWidth": 4, "lineWidth": 150 },
+    "lint": { "rules": { "exclude": [] } },
+    "tasks": {
+        "dev": "deno run --watch mod.ts",
+        "prepush": "deno fmt --check mod.ts src test && deno lint && deno check mod.ts && deno test -A"
+    },
+    "imports": {
+        "@cross/fs": "jsr:@cross/fs@^0.1.14",
+        "@std/assert": "jsr:@std/assert@1",
+        "@cross/test": "jsr:@cross/test@^0.0.14"
+    }
+}
