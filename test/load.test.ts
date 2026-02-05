@@ -91,3 +91,15 @@ test("load from object", async (_context, done) => {
         done(e);
     }
 });
+
+test("load from YAML file", async (_context, done) => {
+    try {
+        const result = await load("test/assets/minimal-openapi.yaml");
+        assert(result.version === "openapi3");
+        assert(result.registry.has("Item"));
+        assert(result.registry.get("Item")?.properties?.id?.type === "string");
+        done();
+    } catch (e) {
+        done(e);
+    }
+});

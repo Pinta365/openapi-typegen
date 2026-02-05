@@ -1,0 +1,17 @@
+{
+    "openapi": "3.0.0",
+    "info": { "title": "Minimal API", "version": "1.0" },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Pet": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" }
+                }
+            }
+        }
+    }
+}
