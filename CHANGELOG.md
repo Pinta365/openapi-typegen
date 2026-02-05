@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-02-05
+
+### Added
+
+- **JSR publish CI**: `.github/workflows/jsr-publish.yml` publishes the package to JSR when a GitHub release is published (`npx jsr publish`).
+- **npm publish CI**: `.github/workflows/npm-publish.yml` builds the npm package with `deno task build:npm` and publishes to npm (public) when a GitHub release is published.
+
 ## [0.0.1] - 2026-02-05
 
 ### Base functionality (first release)
@@ -33,5 +40,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **AGENTS.md**: Documented `test/assets/`, clarified reference material vs test assets, and added `@std/yaml` to dependencies.
 
-[Unreleased]: https://github.com/pinta365/openapi-typegen/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/pinta365/openapi-typegen/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/pinta365/openapi-typegen/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/pinta365/openapi-typegen/releases/tag/v0.0.1
