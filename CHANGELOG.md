@@ -18,11 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   Replaces the previous `outputPath` option.
 - **Log level**: Option `logLevel: "basic" | "verbose"` (default `"basic"`) controls warning detail. When types are emitted in more than one file,
   basic logs a single-line summary; verbose logs the full list of duplicate types with no truncation.
-- **Endpoint hints**: Option `includeEndpointHints` (default `true`) adds JSDoc “Used by: METHOD /path” on types that are referenced by path operations (e.g.
-  “Used by: GET /pets”). Exported type `EndpointHint` and optional `endpointHints` map for programmatic use.
+- **Endpoint hints**: Option `includeEndpointHints` (default `true`) adds JSDoc “Used by: METHOD /path” on types that are referenced by path
+  operations (e.g. “Used by: GET /pets”). Exported type `EndpointHint` and optional `endpointHints` map for programmatic use.
 
-- **Format in JSDoc**: When a schema (or property) has a `format` field (e.g. `date-time`, `email`, `uuid`), generated JSDoc now includes
-  "Format: &lt;format&gt;" automatically for types and properties.
+- **Format in JSDoc**: When a schema (or property) has a `format` field (e.g. `date-time`, `email`, `uuid`), generated JSDoc now includes "Format:
+  &lt;format&gt;" automatically for types and properties.
 
 ## [0.0.2] - 2026-02-05
 
