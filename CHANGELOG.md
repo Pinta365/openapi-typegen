@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-02-06
+
+### Added
+
+- **File splitting**: Option `split: "tag" | "path"` splits generated types into multiple files. Use `split: "tag"` to group by operation tag, or
+  `split: "path"` to group by first path segment. Requires `output` (directory path). Generates `common.ts` for shared types, one file per tag/path
+  segment, and `index.ts` that re-exports all.
+- **Unified output option**: Option `output` specifies where to write: a file path (single-file mode) or a directory path (when `split` is set).
+  Replaces the previous `outputPath` option.
+- **Log level**: Option `logLevel: "basic" | "verbose"` (default `"basic"`) controls warning detail. When types are emitted in more than one file,
+  basic logs a single-line summary; verbose logs the full list of duplicate types with no truncation.
+- **Endpoint hints**: Option `includeEndpointHints` (default `true`) adds JSDoc “Used by: METHOD /path” on types that are referenced by path operations (e.g.
+  “Used by: GET /pets”). Exported type `EndpointHint` and optional `endpointHints` map for programmatic use.
+
+- **Format in JSDoc**: When a schema (or property) has a `format` field (e.g. `date-time`, `email`, `uuid`), generated JSDoc now includes
+  "Format: &lt;format&gt;" automatically for types and properties.
+
 ## [0.0.2] - 2026-02-05
 
 ### Added
@@ -24,7 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Resolve**: Internal `$ref`s and external refs (with a pluggable resolver, default `fetch`) are collected; external documents are fetched and
   merged so the type set is self-contained.
 - **Generate**: TypeScript interfaces and type aliases from the resolved schemas. Optional camelCase property naming, configurable indent (tabs or
-  spaces), and a file header (default or custom). Output is returned as a string and can be written to a file via `outputPath`.
+  spaces), and a file header (default or custom). Output is returned as a string and can be written to a file via `output`.
 
 ### Added
 
@@ -41,6 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **AGENTS.md**: Documented `test/assets/`, clarified reference material vs test assets, and added `@std/yaml` to dependencies.
 
-[Unreleased]: https://github.com/pinta365/openapi-typegen/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/pinta365/openapi-typegen/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/pinta365/openapi-typegen/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/pinta365/openapi-typegen/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/pinta365/openapi-typegen/releases/tag/v0.0.1
