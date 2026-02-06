@@ -4,7 +4,7 @@ import { toCamelCase, toPascalCase } from "./naming.ts";
 const DEFAULT_INDENT: { useTabs: false; width: number } = { useTabs: false, width: 4 };
 
 /** Map a $ref value (e.g. #/components/schemas/Foo or URL#/path) to a PascalCase type name. */
-function refToTypeName(ref: string): string {
+export function refToTypeName(ref: string): string {
     if (ref.startsWith("http://") || ref.startsWith("https://")) {
         const match = ref.match(/#\/(.+)$/);
         return match ? toPascalCase(match[1].replace(/^.*\//, "")) : "unknown";
@@ -76,6 +76,18 @@ function propName(key: string, propertyNaming: "camel" | "preserve"): string {
     return propertyNaming === "camel" ? toCamelCase(key) : key;
 }
 
+/** True if the string is a valid TypeScript property name that can be emitted unquoted (identifier). */
+function isValidIdentifier(name: string): boolean {
+    return /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+}
+
+/** Emit the property name for TypeScript: quoted if not a valid identifier (e.g. "+1", "0", "my-key"). */
+function emitPropertyName(name: string): string {
+    if (isValidIdentifier(name)) return name;
+    const escaped = name.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return `"${escaped}"`;
+}
+
 /** Format a description string as a JSDoc block (single or multi-line), with optional indent. */
 function formatJSDocComment(text: string, indent: string): string {
     const safe = String(text).replace(/\*\//g, "* /");
@@ -107,8 +119,12 @@ function generateProperties(
             const referenced = map.get(refTypeName);
             commentText = (referenced?.description ?? referenced?.title ?? refTypeName) as string | undefined;
         }
+        if (typeof prop.format === "string" && prop.format) {
+            commentText = commentText ? `${commentText}\n\nFormat: ${prop.format}` : `Format: ${prop.format}`;
+        }
         const desc = commentText ? formatJSDocComment(commentText, indent) : "";
         const type = schemaToTS(prop, map, { propertyNaming });
+        const propKey = emitPropertyName(name);
         if (type === "object" && prop.properties) {
             const inner = generateProperties(
                 prop.properties,
@@ -119,19 +135,19 @@ function generateProperties(
                 indentUnit,
             );
             if (desc) lines.push(desc);
-            lines.push(`${indent}${name}${optional}: {`);
+            lines.push(`${indent}${propKey}${optional}: {`);
             lines.push(...inner);
             lines.push(`${indent}};`);
         } else {
             if (desc) lines.push(desc);
-            lines.push(`${indent}${name}${optional}: ${type};`);
+            lines.push(`${indent}${propKey}${optional}: ${type};`);
         }
     }
     return lines;
 }
 
 /** Emit a single type/interface declaration (interface, type alias, or extends). */
-function generateInterface(
+export function generateInterface(
     name: string,
     schema: SchemaObject,
     map: ResolvedSchemaMap,
@@ -139,7 +155,15 @@ function generateInterface(
     indentStr: string,
 ): string {
     const lines: string[] = [];
-    const schemaCommentText = (schema.description ?? schema.title ?? name) as string | undefined;
+    let schemaCommentText = (schema.description ?? schema.title ?? name) as string | undefined;
+    if (typeof schema.format === "string" && schema.format) {
+        schemaCommentText = schemaCommentText ? `${schemaCommentText}\n\nFormat: ${schema.format}` : `Format: ${schema.format}`;
+    }
+    const hints = opts.endpointHints?.get(name);
+    if (hints && hints.length > 0) {
+        const usedBy = "Used by:\n" + hints.map((e) => ` - ${e.method} ${e.path}`).join("\n");
+        schemaCommentText = schemaCommentText ? `${schemaCommentText}\n\n${usedBy}` : usedBy;
+    }
     const desc = schemaCommentText ? formatJSDocComment(schemaCommentText, "") : "";
     const propNaming = opts.propertyNaming ?? DEFAULT_PROP_NAMING;
 
@@ -188,8 +212,42 @@ function generateInterface(
     return lines.join("\n");
 }
 
+/**
+ * Collect type names referenced by a schema ($ref, allOf, oneOf, anyOf, items, properties).
+ * Only includes names that exist in the map.
+ */
+export function collectSchemaRefs(schema: SchemaObject, map: ResolvedSchemaMap): Set<string> {
+    const out = new Set<string>();
+    function visit(s: SchemaObject): void {
+        if (s.$ref) {
+            const name = refToTypeName(s.$ref);
+            if (name !== "unknown" && map.has(name)) {
+                out.add(name);
+            }
+        }
+        if (s.allOf) { for (const x of s.allOf) visit(x); }
+        if (s.oneOf) { for (const x of s.oneOf) visit(x); }
+        if (s.anyOf) { for (const x of s.anyOf) visit(x); }
+        if (s.items) visit(s.items);
+        if (s.properties) { for (const x of Object.values(s.properties)) visit(x); }
+    }
+    visit(schema);
+    return out;
+}
+
+/**
+ * Build a dependency graph: for each type name, the set of type names it references (that are in the map).
+ */
+export function buildDependencyGraph(map: ResolvedSchemaMap): Map<string, Set<string>> {
+    const graph = new Map<string, Set<string>>();
+    for (const [name, schema] of map) {
+        graph.set(name, collectSchemaRefs(schema, map));
+    }
+    return graph;
+}
+
 /** Build the default file header comment (tool, timestamp, optional sourceLabel, do-not-edit). */
-function buildDefaultHeader(options: GenerateOptions): string {
+export function buildDefaultHeader(options: GenerateOptions): string {
     const lines = [
         " * Auto-generated TypeScript types with @pinta365/openapi-typegen",
         " * Generated at: " + new Date().toISOString(),

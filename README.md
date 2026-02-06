@@ -5,7 +5,7 @@ Generate TypeScript types from OpenAPI 2 (Swagger) and OpenAPI 3.x specs. Loads 
 
 ## Usage
 
-Pass a URL, file path, or parsed spec; use `outputPath` with any of them to write the result to a file.
+Pass a URL, file path, or parsed spec; use `output` with any of them to write the result to a file (or directory when using `split`).
 
 ```ts
 import { generateTypes } from "@pinta365/openapi-typegen";
@@ -13,7 +13,7 @@ import { generateTypes } from "@pinta365/openapi-typegen";
 // From URL (string)
 const source = await generateTypes("https://api.example.com/openapi.json");
 // From file path (string)
-const fromFile = await generateTypes("references/openapi.json", { outputPath: "api.d.ts" });
+const fromFile = await generateTypes("references/openapi.json", { output: "api.d.ts" });
 // From parsed spec object
 const fromObject = await generateTypes({ openapi: "3.0.0", components: { schemas: { ... } } });
 ```
@@ -22,22 +22,32 @@ const fromObject = await generateTypes({ openapi: "3.0.0", components: { schemas
 
 ### `generateTypes(spec, options?)`
 
-Returns a `Promise<string>` of the generated TypeScript source. Optionally writes to a file when `outputPath` is set.
+Returns a `Promise<string>` of the generated TypeScript source. Optionally writes to a file (or directory when `split` is set) when `output` is set.
 
 - **`spec`** (`SpecInput`): URL string, file path string, `URL` instance, or parsed OpenAPI/Swagger object (OpenAPI 2 or 3.x).
 - **`options`** (`GenerateOptions`): Optional. See below.
 
 ### Options
 
-| Option               | Type                                                        | Default                        | Description                                                                                              |
-| -------------------- | ----------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **`resolver`**       | `(url: string) => Promise<unknown>`                         | `fetch`                        | Resolver for external `$ref` URLs. Receives the URL, returns parsed JSON.                                |
-| **`outputPath`**     | `string`                                                    | —                              | If set, the generated TypeScript is written to this path (via `@cross/fs`).                              |
-| **`propertyNaming`** | `"camel"` \| `"preserve"`                                   | `"camel"`                      | Property names in generated types: camelCase or preserve spec as-is.                                     |
-| **`indent`**         | `{ useTabs: true }` \| `{ useTabs: false; width?: number }` | `{ useTabs: false, width: 4 }` | Indentation: one tab per level, or `width` spaces per level (default 4).                                 |
-| **`includeHeader`**  | `boolean`                                                   | `true`                         | Whether to emit a file header comment.                                                                   |
-| **`headerComment`**  | `string`                                                    | —                              | Custom header text when `includeHeader` is true. Multi-line strings are emitted as-is.                   |
-| **`sourceLabel`**    | `string`                                                    | (auto from spec)               | Label shown in the default header as “Source file: …”. Set automatically when `spec` is a string or URL. |
+| Option                     | Type                                                        | Default                        | Description                                                                                                        |
+| -------------------------- | ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| **`resolver`**             | `(url: string) => Promise<unknown>`                         | `fetch`                        | Resolver for external `$ref` URLs. Receives the URL, returns parsed JSON.                                          |
+| **`output`**               | `string`                                                    | —                              | If set, generated TypeScript is written here: file path (single file) or directory path (when `split` is set).     |
+| **`split`**                | `"tag"` \| `"path"`                                         | —                              | When set, split types into multiple files by operation tag or path segment; requires `output` (directory).         |
+| **`propertyNaming`**       | `"camel"` \| `"preserve"`                                   | `"camel"`                      | Property names in generated types: camelCase or preserve spec as-is.                                               |
+| **`indent`**               | `{ useTabs: true }` \| `{ useTabs: false; width?: number }` | `{ useTabs: false, width: 4 }` | Indentation: one tab per level, or `width` spaces per level (default 4).                                           |
+| **`includeHeader`**        | `boolean`                                                   | `true`                         | Whether to emit a file header comment.                                                                             |
+| **`headerComment`**        | `string`                                                    | —                              | Custom header text when `includeHeader` is true. Multi-line strings are emitted as-is.                             |
+| **`sourceLabel`**          | `string`                                                    | (auto from spec)               | Label shown in the default header as “Source file: …”. Set automatically when `spec` is a string or URL.           |
+| **`logLevel`**             | `"basic"` \| `"verbose"`                                    | `"basic"`                      | Log level for warnings: basic = short messages; verbose = full details (e.g. all types emitted in multiple files). |
+| **`includeEndpointHints`** | `boolean`                                                   | `true`                         | When true (default), add JSDoc “Used by: METHOD /path” on types referenced by path operations. Set to false to disable.        |
+
+**Splitting output**
+
+When `split` is set, pass a directory path as `output`. Types are grouped into multiple files; shared types go to `common.ts`, and an `index.ts`
+re-exports everything. Use `split: "tag"` to group by OpenAPI operation tags (e.g. one file per tag like “Daily Activity Routes”). Use `split: "path"`
+to group by the first path segment (e.g. `/v2/usercollection/...` → `usercollection.ts`). Types referenced by more than one group are placed in
+`common.ts`.
 
 **Default header** (when `includeHeader` is true and `headerComment` is not set):
 

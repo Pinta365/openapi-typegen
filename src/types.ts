@@ -56,12 +56,20 @@ export interface LoadResult {
 /** Resolver for external $ref URLs: fetch document by URL, return parsed JSON. */
 export type Resolver = (url: string) => Promise<unknown>;
 
+/** Endpoint that references a type (method + path). */
+export interface EndpointHint {
+    method: string;
+    path: string;
+}
+
 /** Options for generateTypes. */
 export interface GenerateOptions {
     /** Resolver for external $ref URLs. Default: fetch. */
     resolver?: Resolver;
-    /** If set, write generated TypeScript to this path (using @cross/fs). */
-    outputPath?: string;
+    /** If set, write generated TypeScript here: single file path (when not splitting) or directory path (when split is set). */
+    output?: string;
+    /** When set, split types into multiple files by operation tag or path segment; requires output (directory). */
+    split?: "tag" | "path";
     /** Property naming in generated types. Default: "camel". */
     propertyNaming?: "camel" | "preserve";
     /**
@@ -85,6 +93,22 @@ export interface GenerateOptions {
      * When generateTypes(spec, options) is called with a string or URL spec, this is set automatically if not provided.
      */
     sourceLabel?: string;
+    /**
+     * Log level for warnings and diagnostics. Default: "basic".
+     * - "basic": Short messages only.
+     * - "verbose": Full details.
+     */
+    logLevel?: "basic" | "verbose";
+    /**
+     * When true (default), add JSDoc "Used by: METHOD /path" on types that are referenced by path operations.
+     * Set to false to disable. Requires reading paths from the spec; no effect if spec has no paths.
+     */
+    includeEndpointHints?: boolean;
+    /**
+     * Optional precomputed map: type name → endpoints that reference it.
+     * Set by generateTypes when includeEndpointHints is true; can be supplied when calling generate() directly.
+     */
+    endpointHints?: Map<string, EndpointHint[]>;
 }
 
 /** Resolved schema map: type name (PascalCase) -> schema. Used by codegen. */
