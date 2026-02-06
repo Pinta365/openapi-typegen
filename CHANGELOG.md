@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **Property naming**: Default for `propertyNaming` is now `"preserve"` (was `"camel"`). Set `propertyNaming: "camel"` to convert property names to
+  camelCase.
+
 ## [0.0.3] - 2026-02-06
 
 ### Added

@@ -70,7 +70,7 @@ export interface GenerateOptions {
     output?: string;
     /** When set, split types into multiple files by operation tag or path segment; requires output (directory). */
     split?: "tag" | "path";
-    /** Property naming in generated types. Default: "camel". */
+    /** Property naming in generated types. Default: "preserve". */
     propertyNaming?: "camel" | "preserve";
     /**
      * Indentation for generated output.

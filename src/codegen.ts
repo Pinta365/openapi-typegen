@@ -22,7 +22,7 @@ export function refToTypeName(ref: string): string {
     return "unknown";
 }
 
-const DEFAULT_PROP_NAMING = "camel" as const;
+const DEFAULT_PROP_NAMING = "preserve" as const;
 
 /** Convert a schema node to a TypeScript type string (e.g. "string", "Foo[]", "A | B"). */
 function schemaToTS(
